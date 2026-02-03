@@ -6,19 +6,20 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public interface UsuarioService {
 
     public Usuario salvarUsuario(Usuario usuario);
 
-    public Usuario findUsuario(Long id);
+    public Optional<Usuario> findUsuario(Long id);
 
     public List<Usuario> findAllUsuario();
 
-    public Usuario updateUsuario(Long id);
+    public Usuario updateUsuario(Usuario usuario);
 
-    public void deleteUsuario();
+    public void deleteByIdUsuario(Long id);
 
     public boolean verificaEmailExistente(String email);
 

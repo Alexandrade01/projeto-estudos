@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
             return usuarioRepository.save(usuario);
         } catch (ConflictException e) {
-            throw new ConflictException("Email de usuario já cadastrado: ",e.getCause());
+            throw new ConflictException("Email de usuario já cadastrado: ", e.getCause());
         }
     }
 
@@ -36,8 +37,23 @@ public class UsuarioServiceImpl implements UsuarioService {
      * @return
      */
     @Override
-    public Usuario findUsuario(Long id) {
-        return null;
+    public Optional<Usuario> findUsuario(Long id) {
+
+        try {
+
+            Optional<Usuario> user = usuarioRepository.findById(id);
+
+            if (user.isEmpty()) {
+                throw new ConflictException("Usuario não existe: " + id);
+            }
+
+            return user;
+
+
+        } catch (ConflictException e) {
+            throw new ConflictException("Usuario não existe: " + id, e.getCause());
+        }
+
     }
 
     /**
@@ -45,30 +61,27 @@ public class UsuarioServiceImpl implements UsuarioService {
      */
     @Override
     public List<Usuario> findAllUsuario() {
-        return List.of();
+        return usuarioRepository.findAll();
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public Usuario updateUsuario(Usuario usuario) {
+
+        return usuarioRepository.save(usuario);
     }
 
     /**
      * @param id
-     * @return
      */
     @Override
-    public Usuario updateUsuario(Long id) {
-        return null;
+    public void deleteByIdUsuario(Long id) {
+
+        usuarioRepository.deleteById(id);
     }
 
-    /**
-     *
-     */
-    @Override
-    public void deleteUsuario() {
-
-    }
-
-    /**
-     * @param email
-     * @return
-     */
     @Override
     public boolean verificaEmailExistente(String email) {
         return usuarioRepository.existsByEmail(email);
