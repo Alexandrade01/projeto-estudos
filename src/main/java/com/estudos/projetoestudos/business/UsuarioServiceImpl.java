@@ -2,8 +2,11 @@ package com.estudos.projetoestudos.business;
 
 import com.estudos.projetoestudos.entity.Usuario;
 import com.estudos.projetoestudos.exception.ConflictException;
+import com.estudos.projetoestudos.exception.ResourceNotFoundException;
 import com.estudos.projetoestudos.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,93 +16,110 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
+	private final UsuarioRepository usuarioRepository;
 
-    /**
-     * @param usuario
-     * @return
-     */
-    @Override
-    public Usuario salvarUsuario(Usuario usuario) {
+	private final PasswordEncoder passwordEncoder;
 
-        try {
+	/**
+	 * @param usuario
+	 * @return
+	 */
+	@Override
+	public Usuario salvarUsuario(Usuario usuario) {
 
-            validadorEmail(usuario.getEmail());
+		try {
 
-            return usuarioRepository.save(usuario);
-        } catch (ConflictException e) {
-            throw new ConflictException("Email de usuario já cadastrado: ", e.getCause());
-        }
-    }
+			validadorEmail(usuario.getEmail());
 
-    /**
-     * @param id
-     * @return
-     */
-    @Override
-    public Optional<Usuario> findUsuario(Long id) {
+			usuario.setSenha(passwordEncoder.encode(usuario.getPassword()));
 
-        try {
+			return usuarioRepository.save(usuario);
+		} catch (ConflictException e) {
+			throw new ConflictException("Email de usuario já cadastrado: ", e.getCause());
+		}
+	}
 
-            Optional<Usuario> user = usuarioRepository.findById(id);
+	/**
+	 * @param id
+	 * @return
+	 */
+	@Override
+	public Optional<Usuario> findUsuario(Long id) {
 
-            if (user.isEmpty()) {
-                throw new ConflictException("Usuario não existe: " + id);
-            }
+		try {
 
-            return user;
+			Optional<Usuario> user = usuarioRepository.findById(id);
 
+			if (user.isEmpty()) {
+				throw new ConflictException("Usuario não existe: " + id);
+			}
 
-        } catch (ConflictException e) {
-            throw new ConflictException("Usuario não existe: " + id, e.getCause());
-        }
+			return user;
 
-    }
+		} catch (ConflictException e) {
+			throw new ConflictException("Usuario não existe: " + id, e.getCause());
+		}
 
-    /**
-     * @return
-     */
-    @Override
-    public List<Usuario> findAllUsuario() {
-        return usuarioRepository.findAll();
-    }
+	}
 
-    /**
-     * @return
-     */
-    @Override
-    public Usuario updateUsuario(Usuario usuario) {
+	/**
+	 * @return
+	 */
+	@Override
+	public List<Usuario> findAllUsuario() {
+		return usuarioRepository.findAll();
+	}
 
-        return usuarioRepository.save(usuario);
-    }
+	/**
+	 * @return
+	 */
+	@Override
+	public Usuario updateUsuario(Usuario usuario) {
 
-    /**
-     * @param id
-     */
-    @Override
-    public void deleteByIdUsuario(Long id) {
+		return usuarioRepository.save(usuario);
+	}
 
-        usuarioRepository.deleteById(id);
-    }
+	/**
+	 * @param id
+	 */
+	@Override
+	public void deleteByIdUsuario(Long id) {
 
-    @Override
-    public boolean verificaEmailExistente(String email) {
-        return usuarioRepository.existsByEmail(email);
-    }
+		usuarioRepository.deleteById(id);
+	}
+	
+	/**
+	 * @param email
+	 */
+	@Override
+	public void deleteByEmail(String email) {
 
-    public void validadorEmail(String email) {
+		usuarioRepository.deleteByEmail(email);
+	}
 
-        try {
-            boolean existe = verificaEmailExistente(email);
+	@Override
+	public boolean verificaEmailExistente(String email) {
+		return usuarioRepository.existsByEmail(email);
+	}
 
-            if (existe) {
-                throw new ConflictException("Email de usuario já cadastrado: " + email);
-            }
-        } catch (ConflictException e) {
+	public void validadorEmail(String email) {
 
+		try {
+			boolean existe = verificaEmailExistente(email);
 
-            throw new ConflictException("Email de usuario já cadastrado: " + email, e.getCause());
-        }
+			if (existe) {
+				throw new ConflictException("Email de usuario já cadastrado: " + email);
+			}
+		} catch (ConflictException e) {
 
-    }
+			throw new ConflictException("Email de usuario já cadastrado: " + email, e.getCause());
+		}
+
+	}
+	
+	@Override
+	public Usuario buscaUsuarioPorEmail(String email) {
+		
+		return usuarioRepository.findByEmail(email).orElseThrow(() -> new ResourceNotFoundException("Email não encontrado " + email));
+	}
 }

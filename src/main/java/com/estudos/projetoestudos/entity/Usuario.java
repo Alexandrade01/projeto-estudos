@@ -1,13 +1,25 @@
 package com.estudos.projetoestudos.entity;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import jakarta.annotation.Nonnull;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter
@@ -15,9 +27,14 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "usuario")
-public class Usuario {
+public class Usuario implements UserDetails {
 
-    @Id
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long Id;
 
@@ -26,7 +43,7 @@ public class Usuario {
     @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "senha", length = 10)
+    @Column(name = "senha", length = 100)
     @Nonnull
     private String senha;
 
@@ -37,5 +54,23 @@ public class Usuario {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name="usuario_id" , referencedColumnName = "id")
     private List<Telefone> telefones;
+
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		 
+		return List.of();
+	}
+
+	@Override
+	public String getPassword() {
+		
+		return senha;
+	}
+
+	@Override
+	public String getUsername() {
+		
+		return email;
+	}
 
 }
